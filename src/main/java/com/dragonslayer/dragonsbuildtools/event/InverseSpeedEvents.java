@@ -6,18 +6,16 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
-/** Applies the inverse speed logic each tick. */
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = "dragonsbuildtools")
 public class InverseSpeedEvents {
     @SubscribeEvent
-    public static void onLivingTick(TickEvent.LivingTickEvent event) {
-        LivingEntity entity = event.getEntity();
-        MobEffectInstance inst = entity.getEffect(ModEffects.INVERSE_SPEED.get());
-        if (inst == null) return;
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (event.getEntity() instanceof LivingEntity entity) {
+            MobEffectInstance inst = entity.getEffect(ModEffects.INVERSE_SPEED);
+            if (inst == null) return;
 
-        if (event.phase == TickEvent.Phase.END) {
             int amplifier = inst.getAmplifier();
             Vec3 delta = entity.getDeltaMovement();
             double horizontalSpeed = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
