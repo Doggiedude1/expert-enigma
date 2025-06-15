@@ -15,5 +15,6 @@ public class ModPotions {
     public static final DeferredHolder<Potion, Potion> INVERSE_SPEED = POTIONS.register(
             "inverse_speed",
             () -> new Potion(new MobEffectInstance(ModEffects.INVERSE_SPEED.get(), 3600))
+            () -> new Potion(new MobEffectInstance(ModEffects.INVERSE_SPEED, 3600))
     );
 }
