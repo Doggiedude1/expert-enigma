@@ -16,6 +16,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
 import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
 import com.dragonslayer.dragonsbuildtools.effect.ModPotions;
 
@@ -39,6 +40,7 @@ public class BuildTools
         modEventBus.addListener(this::commonSetup);
 
         // Register custom content
+        ModAttributes.ATTRIBUTES.register(modEventBus);
         ModEffects.EFFECTS.register(modEventBus);
         ModPotions.POTIONS.register(modEventBus);
 
