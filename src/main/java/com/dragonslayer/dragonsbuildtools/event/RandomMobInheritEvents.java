@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Vector;
 import java.util.function.Predicate;
 /**
  * Randomly assigns the goals and attributes of another mob whenever a mob joins the world.
@@ -54,12 +56,13 @@ public class RandomMobInheritEvents {
         EntityType<? extends Mob> randomType = MOB_TYPES.get(random.nextInt(MOB_TYPES.size()));
         Mob randomMob = randomType.create(event.getLevel());
         if (randomMob == null) return;
-      
-        randomMob.setInvisible(true);
+        System.out.println(randomMob);
+        randomMob.setInvisible(false);
         randomMob.setInvulnerable(true);
         randomMob.setNoGravity(true);
         randomMob.setSilent(true);
-        randomMob.moveTo(mob.position());
+        Vec3 mobPos = new Vec3(mob.position().x,mob.position().y - 10, mob.position().z);
+        randomMob.moveTo(mobPos);
         randomMob.getPersistentData().putBoolean(SKIP_TAG, true);
         event.getLevel().addFreshEntity(randomMob);
 
