@@ -20,8 +20,8 @@ public class InverseSpeedEffect extends MobEffect {
                 Attributes.MOVEMENT_SPEED,
                 ResourceLocation.tryBuild(com.dragonslayer.dragonsbuildtools.BuildTools.MOD_ID,
                         ATTRIBUTE_UUID.toString()),
-                0.0D,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                0f,
+                AttributeModifier.Operation.ADD_VALUE);
     }
 
     // No special behavior needed; the attribute modifier scales with amplifier automatically.

@@ -44,7 +44,7 @@ public class BuildTools
         ModPotions.POTIONS.register(modEventBus);
 
         // Allow the movement speed attribute to accept negative values
-        ((RangedAttributeAccessor) (Object) Attributes.MOVEMENT_SPEED.value()).dragonsbuildtools$setMinValue(-4.0D);
+        ((RangedAttributeAccessor) (Object) Attributes.MOVEMENT_SPEED.value()).dragonsbuildtools$setMinValue(-1024.0F);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (BuildTools) to respond directly to events.
