@@ -32,6 +32,8 @@ public class BuildTools
 
 
 
+        // Register inverse speed event handlers
+        NeoForge.EVENT_BUS.register(InverseSpeedEvents.class);
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public BuildTools(IEventBus modEventBus, ModContainer modContainer)
