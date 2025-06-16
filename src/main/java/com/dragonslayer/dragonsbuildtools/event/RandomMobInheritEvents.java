@@ -19,7 +19,6 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.function.Predicate;
-
 /**
  * Randomly assigns the goals and attributes of another mob whenever a mob joins the world.
  */
@@ -55,7 +54,7 @@ public class RandomMobInheritEvents {
         EntityType<? extends Mob> randomType = MOB_TYPES.get(random.nextInt(MOB_TYPES.size()));
         Mob randomMob = randomType.create(event.getLevel());
         if (randomMob == null) return;
-
+      
         randomMob.setInvisible(true);
         randomMob.setInvulnerable(true);
         randomMob.setNoGravity(true);
