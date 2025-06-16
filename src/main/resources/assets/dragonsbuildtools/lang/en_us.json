@@ -1,4 +1,5 @@
 {
   "effect.dragonsbuildtools.inverse_speed": "Inverse Speed",
-  "item.minecraft.potion.effect.dragonsbuildtools.inverse_speed": "Potion of Inverse Speed"
+  "item.minecraft.potion.effect.dragonsbuildtools.inverse_speed": "Potion of Inverse Speed",
+  "attribute.name.dragonsbuildtools.inverse_speed": "Inverse Speed"
 }

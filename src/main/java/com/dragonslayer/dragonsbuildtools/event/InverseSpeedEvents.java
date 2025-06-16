@@ -1,41 +1,34 @@
 package com.dragonslayer.dragonsbuildtools.event;
 
 import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-import java.util.Objects;
-
-/** Applies the inverse speed logic each tick. */
-@EventBusSubscriber(modid = com.dragonslayer.dragonsbuildtools.BuildTools.MOD_ID)
+/** Handles events related to the inverse speed effect. */
 public class InverseSpeedEvents {
+    /** Inject our custom attribute into all living entities. */
     @SubscribeEvent
-    public static void onEntityTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
-
-        double modifier = entity.getAttributeValue(BuiltInRegistries.ATTRIBUTE.wrapAsHolder(Attributes.MOVEMENT_SPEED.value()));
-        if (entity.hasEffect(ModEffects.INVERSE_SPEED)) {
-            var effectInstance = entity.getEffect(ModEffects.INVERSE_SPEED);
-            if (effectInstance != null) {
-                int amp = effectInstance.getAmplifier();
-                Holder<net.minecraft.world.entity.ai.attributes.Attribute> attributeHolder;
-                attributeHolder = Attributes.MOVEMENT_SPEED;
-                Objects.requireNonNull(entity.getAttribute(attributeHolder)).addTransientModifier(new AttributeModifier(ResourceLocation.parse("generic.movement_speed"), -(1.0D - 0.2D * amp), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-                // Example debug
-                System.out.println("Inverse Speed amplifier: " + amp);
-            }
+    public static void onEntityAttributeModification(EntityAttributeModificationEvent event) {
+        for (EntityType<? extends LivingEntity> type : event.getTypes()) {
+            event.add(type, net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.wrapAsHolder(ModAttributes.INVERSE_SPEED.get()));
         }
+    }
+
+    /** Each tick, flip horizontal movement if the inverse speed effect is active. */
+    @SubscribeEvent
+    public static void onLivingTick(PlayerTickEvent.Post event) {
+        LivingEntity entity = event.getEntity();
+        if (!entity.hasEffect(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModEffects.INVERSE_SPEED.get()))) {
+            return;
+        }
+        int amplifier = entity.getEffect(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModEffects.INVERSE_SPEED.get())).getAmplifier();
+        double scale = 1.0 + 0.2D * (amplifier + 1);
+        Vec3 delta = entity.getDeltaMovement();
+        entity.setDeltaMovement(-delta.x * scale, delta.y, -delta.z * scale);
     }
 }
