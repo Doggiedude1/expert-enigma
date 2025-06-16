@@ -12,8 +12,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /** Applies the inverse speed logic each tick. */
-@EventBusSubscriber(modid = com.dragonslayer.dragonsbuildtools.BuildTools.MOD_ID,
-        bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = com.dragonslayer.dragonsbuildtools.BuildTools.MOD_ID)
 public class InverseSpeedEvents {
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
