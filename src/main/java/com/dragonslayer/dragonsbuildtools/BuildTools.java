@@ -1,8 +1,7 @@
 package com.dragonslayer.dragonsbuildtools;
 
-import org.slf4j.Logger;
-
 import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -16,6 +15,10 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
+import com.dragonslayer.dragonsbuildtools.effect.ModPotions;
+import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
+import com.dragonslayer.dragonsbuildtools.event.InverseSpeedEvents;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(BuildTools.MOD_ID)
@@ -34,6 +37,12 @@ public class BuildTools
     {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+
+        // Register custom content
+        ModEffects.EFFECTS.register(modEventBus);
+        ModPotions.POTIONS.register(modEventBus);
+        ModAttributes.ATTRIBUTES.register(modEventBus);
+        modEventBus.addListener(InverseSpeedEvents::onEntityAttributeModification);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (BuildTools) to respond directly to events.
