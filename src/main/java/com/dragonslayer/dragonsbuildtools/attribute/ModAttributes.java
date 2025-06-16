@@ -6,7 +6,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
 /** Registers custom attributes for the mod. */
 public class ModAttributes {
     public static final DeferredRegister<Attribute> ATTRIBUTES =
