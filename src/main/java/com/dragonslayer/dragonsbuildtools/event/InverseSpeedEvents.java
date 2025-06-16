@@ -2,9 +2,12 @@ package com.dragonslayer.dragonsbuildtools.event;
 
 import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 

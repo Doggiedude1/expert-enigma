@@ -31,6 +31,7 @@ public class BuildTools
     // Create a Deferred Register to hold Blocks which will all be registered under the "dragonsbuildtools" namespace
 
 
+
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public BuildTools(IEventBus modEventBus, ModContainer modContainer)
@@ -69,7 +70,6 @@ public class BuildTools
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event)
     {
-
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
