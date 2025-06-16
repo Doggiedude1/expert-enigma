@@ -14,7 +14,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class ModEffects {
     public static final DeferredRegister<MobEffect> EFFECTS =
             DeferredRegister.create(BuiltInRegistries.MOB_EFFECT, BuildTools.MOD_ID);
-            DeferredRegister.create(BuiltInRegistries.MOB_EFFECT, "dragonsbuildtools");
 
     public static final DeferredHolder<MobEffect, MobEffect> INVERSE_SPEED =
             EFFECTS.register("inverse_speed", InverseSpeedEffect::new);
