@@ -19,6 +19,7 @@ import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
 import com.dragonslayer.dragonsbuildtools.effect.ModPotions;
 import com.dragonslayer.dragonsbuildtools.mixin.RangedAttributeAccessor;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(BuildTools.MOD_ID)
@@ -29,6 +30,7 @@ public class BuildTools
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "dragonsbuildtools" namespace
+
 
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
@@ -44,6 +46,7 @@ public class BuildTools
 
         // Allow the movement speed attribute to accept negative values
         ((RangedAttributeAccessor) (Object) Attributes.MOVEMENT_SPEED.value()).dragonsbuildtools$setMinValue(-4.0D);
+
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (BuildTools) to respond directly to events.
@@ -71,7 +74,6 @@ public class BuildTools
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event)
     {
-
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
