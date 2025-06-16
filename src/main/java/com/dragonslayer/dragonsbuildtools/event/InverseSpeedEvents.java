@@ -1,9 +1,8 @@
 package com.dragonslayer.dragonsbuildtools.event;
 
+import com.dragonslayer.dragonsbuildtools.BuildTools;
 import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
-import net.minecraft.core.registries.BuiltInRegistries;
-import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
-import net.minecraft.world.effect.MobEffectInstance;
+@EventBusSubscriber(modid = BuildTools.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
