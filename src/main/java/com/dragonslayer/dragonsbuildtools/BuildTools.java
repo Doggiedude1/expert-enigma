@@ -17,8 +17,8 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
 import com.dragonslayer.dragonsbuildtools.effect.ModPotions;
-import com.dragonslayer.dragonsbuildtools.attribute.ModAttributes;
-import com.dragonslayer.dragonsbuildtools.event.InverseSpeedEvents;
+import com.dragonslayer.dragonsbuildtools.mixin.RangedAttributeAccessor;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(BuildTools.MOD_ID)
@@ -42,8 +42,9 @@ public class BuildTools
         // Register custom content
         ModEffects.EFFECTS.register(modEventBus);
         ModPotions.POTIONS.register(modEventBus);
-        ModAttributes.ATTRIBUTES.register(modEventBus);
-        modEventBus.addListener(InverseSpeedEvents::onEntityAttributeModification);
+
+        // Allow the movement speed attribute to accept negative values
+        ((RangedAttributeAccessor) (Object) Attributes.MOVEMENT_SPEED.value()).dragonsbuildtools$setMinValue(-4.0D);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (BuildTools) to respond directly to events.
