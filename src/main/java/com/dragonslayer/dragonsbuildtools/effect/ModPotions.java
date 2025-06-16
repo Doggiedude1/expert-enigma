@@ -4,6 +4,7 @@ import com.dragonslayer.dragonsbuildtools.BuildTools;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.Potion;
+import com.dragonslayer.dragonsbuildtools.effect.ModEffects;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 

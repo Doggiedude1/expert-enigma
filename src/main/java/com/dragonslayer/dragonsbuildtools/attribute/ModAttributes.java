@@ -20,6 +20,4 @@ public class ModAttributes {
 
     public static final DeferredHolder<Attribute, Attribute> INVERSE_SPEED = ATTRIBUTES.register(
             "inverse_speed", () -> (new PercentageAttribute("attribute.name.movement_speed", 0.7, (double)-1024F, (double)1024.0F, (double)1000.0F)).setSyncable(true));
-
-
 }
