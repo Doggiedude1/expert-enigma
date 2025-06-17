@@ -57,6 +57,16 @@ public class RandomMobInheritEvents {
             mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, net.minecraft.world.entity.player.Player.class, true));
         });
 
+        GOAL_MAP.put(EntityType.HUSK, GOAL_MAP.get(EntityType.ZOMBIE));
+
+        GOAL_MAP.put(EntityType.DROWNED, (mob) -> {
+            mob.goalSelector.addGoal(1, new FloatGoal(mob));
+            mob.goalSelector.addGoal(2, new MeleeAttackGoal((PathfinderMob) mob, 1.0, false));
+            mob.goalSelector.addGoal(3, new RandomStrollGoal((PathfinderMob) mob, 1.0));
+            mob.targetSelector.addGoal(1, new HurtByTargetGoal((PathfinderMob) mob));
+            mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, Player.class, true));
+        });
+
         GOAL_MAP.put(EntityType.ENDERMAN, (mob) -> {
             mob.goalSelector.addGoal(0, new FloatGoal(mob));
             mob.goalSelector.addGoal(1, new GenericFreezeWhenLookedAtGoal(mob));
@@ -85,7 +95,7 @@ public class RandomMobInheritEvents {
         addAbility(EntityType.ZOMBIE, new String[]{"dragonsbuildtools_burnInSunlight"});
         addAbility(EntityType.DROWNED, new String[]{"dragonsbuildtools_burnInSunlight","dragonsbuildtools_needsWaterToBreathe"});
         addAbility(EntityType.HUSK, new String[]{"dragonsbuildtools_inflictsHunger"});
-        addAbility(EntityType.ENDERMAN, new String[]{"dragonsbuildtools_teleportLikeEnderman"});
+        addAbility(EntityType.ENDERMAN, new String[]{"dragonsbuildtools_teleportLikeEnderman","dragonsbuildtools_freezeWhenLookedAt","dragonsbuildtools_carryBlockLikeEnderman"});
         addAbility(EntityType.SHULKER, new String[]{"dragonsbuildtools_teleportLikeShulker", "dragonsbuildtools_shootShulkerBullets"});
         // Extend for more entities as you see fit!
     }
@@ -115,6 +125,9 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putBoolean("dragonsbuildtools_inflictsHunger", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_teleportLikeEnderman", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_teleportLikeShulker", false);
+        mob.getPersistentData().putBoolean("dragonsbuildtools_freezeWhenLookedAt", false);
+        mob.getPersistentData().putBoolean("dragonsbuildtools_carryBlockLikeEnderman", false);
+        mob.getPersistentData().putBoolean("dragonsbuildtools_shootShulkerBullets", false);
 
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
@@ -141,6 +154,9 @@ public class RandomMobInheritEvents {
         System.out.println(" inflictsHunger: " + mob.getPersistentData().getBoolean("dragonsbuildtools_inflictsHunger"));
         System.out.println(" Teleport Like Enderman: " + mob.getPersistentData().getBoolean("dragonsbuildtools_teleportLikeEnderman"));
         System.out.println(" Teleport Like Shulker: " + mob.getPersistentData().getBoolean("dragonsbuildtools_teleportLikeShulker"));
+        System.out.println(" Freeze When Looked At: " + mob.getPersistentData().getBoolean("dragonsbuildtools_freezeWhenLookedAt"));
+        System.out.println(" Carry Block Like Enderman: " + mob.getPersistentData().getBoolean("dragonsbuildtools_carryBlockLikeEnderman"));
+        System.out.println(" Shoot Shulker Bullets: " + mob.getPersistentData().getBoolean("dragonsbuildtools_shootShulkerBullets"));
     }
 
     private static void wipeGoals(Mob mob) throws Exception {
