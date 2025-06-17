@@ -1,4 +1,4 @@
-package com.dragonslayer.dragonsbuildtools.mixin;
+package com.dragonslayer.dragonsbuildtools.accessor;
 
 import net.minecraft.world.entity.LivingEntity;
 

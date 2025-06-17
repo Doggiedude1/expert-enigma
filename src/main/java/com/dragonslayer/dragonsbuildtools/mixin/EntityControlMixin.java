@@ -2,6 +2,7 @@ package com.dragonslayer.dragonsbuildtools.mixin;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import com.dragonslayer.dragonsbuildtools.accessor.ControllingPassengerAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
