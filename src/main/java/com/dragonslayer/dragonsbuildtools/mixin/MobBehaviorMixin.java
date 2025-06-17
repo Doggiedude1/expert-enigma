@@ -9,6 +9,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.Drowned;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -22,6 +24,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -104,6 +107,14 @@ public abstract class MobBehaviorMixin {
                         BuiltInRegistries.BLOCK.getKey(randomBlock.getBlock()).toString());
                 System.out.println("🧱 " + mob.getName().getString() + " picked up: " + randomBlock);
             }
+        }
+    }
+
+    @Inject(method = "doHurtTarget", at = @At("HEAD"))
+    private void dragonsbuildtools$applyHungerEffect(net.minecraft.world.entity.Entity target, CallbackInfoReturnable<Boolean> cir) {
+        Mob mob = (Mob)(Object)this;
+        if (shouldInflictHunger(mob) && target instanceof LivingEntity living) {
+            living.addEffect(new MobEffectInstance(MobEffects.HUNGER, 200));
         }
     }
 
