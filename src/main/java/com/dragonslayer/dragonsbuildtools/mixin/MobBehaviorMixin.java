@@ -108,6 +108,12 @@ public abstract class MobBehaviorMixin {
                 System.out.println("🧱 " + mob.getName().getString() + " picked up: " + randomBlock);
             }
         }
+
+        if (canClimbWalls(mob)) {
+            if (mob.horizontalCollision) {
+                mob.setDeltaMovement(mob.getDeltaMovement().x, 0.2, mob.getDeltaMovement().z);
+            }
+        }
     }
 
     @Inject(method = "doHurtTarget", at = @At("HEAD"))
@@ -183,6 +189,14 @@ public abstract class MobBehaviorMixin {
     }
     private boolean shootShulkerBullets(Mob mob){
         return mob.getPersistentData().getBoolean("dragonsbuildtools_shootShulkerBullets");
+    }
+
+    private boolean canShootArrows(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_shootArrowsLikeSkeleton");
+    }
+
+    private boolean canClimbWalls(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_climbWallsLikeSpider");
     }
 
 }
