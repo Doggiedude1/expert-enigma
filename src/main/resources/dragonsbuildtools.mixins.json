@@ -3,6 +3,9 @@
   "package": "com.dragonslayer.dragonsbuildtools.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "RangedAttributeAccessor",
+    "LivingEntityMixin",
+    "EntityScaleMixin",
     "EntityControlMixin",
     "MobBehaviorMixin",
     "AxolotlAttributeMixin",
