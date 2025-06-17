@@ -3,6 +3,8 @@
   "package": "com.dragonslayer.dragonsbuildtools.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "RangedAttributeAccessor"
+    "RangedAttributeAccessor",
+    "LivingEntityMixin",
+    "LivingEntityControlMixin"
   ]
 }

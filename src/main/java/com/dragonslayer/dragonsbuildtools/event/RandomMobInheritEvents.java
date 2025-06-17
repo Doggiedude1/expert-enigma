@@ -5,6 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -14,6 +15,20 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Assigns a random mob's AI to every new mob that spawns.
+ * The donor mob remains invisible and controls the host without riding it,
+ * emulating passenger control without an actual passenger.
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -27,6 +42,7 @@ import java.util.List;
 public class RandomMobInheritEvents {
     private static final String SKIP_TAG = "dragonsbuildtools_skip_inherit";
     private static List<EntityType<? extends Mob>> MOB_TYPES;
+    private static final Map<LivingEntity, Mob> CONTROLLERS = new HashMap<>();
 
     private static void initMobTypes(Level level) {
         if (MOB_TYPES != null && !MOB_TYPES.isEmpty()) return;
@@ -41,6 +57,44 @@ public class RandomMobInheritEvents {
             }
         }
         MOB_TYPES = list;
+    }
+
+    @SubscribeEvent
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        Mob controller = CONTROLLERS.get(entity);
+        if (controller == null) return;
+
+        if (controller.isRemoved() || controller.level() != entity.level()) {
+            CONTROLLERS.remove(entity);
+            return;
+        }
+
+        entity.absMoveTo(controller.getX(), controller.getY(), controller.getZ(), controller.getYRot(), controller.getXRot());
+        entity.setDeltaMovement(controller.getDeltaMovement());
+        entity.setRemainingFireTicks(controller.getRemainingFireTicks());
+    }
+
+    @SubscribeEvent
+    public static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        Mob controller = CONTROLLERS.remove(entity);
+        if (controller != null) controller.discard();
+    }
+
+    @SubscribeEvent
+    public static void onEntityDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        Mob controller = CONTROLLERS.remove(entity);
+        if (controller != null) controller.discard();
+    }
+
+    public static LivingEntity getController(LivingEntity host) {
+        return CONTROLLERS.get(host);
+    }
+
+    public static boolean hasController(LivingEntity host) {
+        return CONTROLLERS.containsKey(host);
     }
 
     @SubscribeEvent
@@ -59,9 +113,13 @@ public class RandomMobInheritEvents {
         if (donor == null) return;
 
         donor.getPersistentData().putBoolean(SKIP_TAG, true);
+        donor.setInvisible(true);
+        donor.setInvulnerable(true);
+        donor.absMoveTo(mob.getX(), mob.getY(), mob.getZ(), mob.getYRot(), mob.getXRot());
+        event.getLevel().addFreshEntity(donor);
+
         copyAttributes(mob, donor);
-        copyGoals(mob, donor);
-        donor.discard();
+        CONTROLLERS.put(mob, donor);
     }
 
     private static void copyAttributes(Mob target, Mob source) {
