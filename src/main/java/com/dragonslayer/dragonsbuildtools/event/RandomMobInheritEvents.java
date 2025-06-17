@@ -29,6 +29,14 @@ import java.util.Map;
  * Assigns a random mob's AI to every new mob that spawns.
  * The donor mob remains invisible and controls the host without riding it,
  * emulating passenger control without an actual passenger.
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Assigns a random mob's AI and attributes to every new mob that spawns.
+ * A temporary donor mob is spawned only to copy its data, then immediately discarded.
  */
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
