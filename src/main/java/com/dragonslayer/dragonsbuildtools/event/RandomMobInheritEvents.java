@@ -5,6 +5,7 @@ import com.dragonslayer.dragonsbuildtools.goals.GenericFreezeWhenLookedAtGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericLeaveBlockGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericShulkerBulletGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericTakeBlockGoal;
+import com.dragonslayer.dragonsbuildtools.goals.GenericBowAttackGoal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -89,6 +90,22 @@ public class RandomMobInheritEvents {
             mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, Player.class, true));
         });
 
+        GOAL_MAP.put(EntityType.SKELETON, (mob) -> {
+            mob.goalSelector.addGoal(1, new FloatGoal(mob));
+            mob.goalSelector.addGoal(2, new GenericBowAttackGoal((PathfinderMob) mob));
+            mob.goalSelector.addGoal(3, new RandomStrollGoal((PathfinderMob) mob, 1.0));
+            mob.targetSelector.addGoal(1, new HurtByTargetGoal((PathfinderMob) mob));
+            mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, Player.class, true));
+        });
+
+        GOAL_MAP.put(EntityType.SPIDER, (mob) -> {
+            mob.goalSelector.addGoal(1, new FloatGoal(mob));
+            mob.goalSelector.addGoal(2, new MeleeAttackGoal((PathfinderMob) mob, 1.0, false));
+            mob.goalSelector.addGoal(3, new RandomStrollGoal((PathfinderMob) mob, 1.0));
+            mob.targetSelector.addGoal(1, new HurtByTargetGoal((PathfinderMob) mob));
+            mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, Player.class, true));
+        });
+
         // Add other entity types...
     }
     static {
@@ -97,6 +114,8 @@ public class RandomMobInheritEvents {
         addAbility(EntityType.HUSK, new String[]{"dragonsbuildtools_inflictsHunger"});
         addAbility(EntityType.ENDERMAN, new String[]{"dragonsbuildtools_teleportLikeEnderman","dragonsbuildtools_freezeWhenLookedAt","dragonsbuildtools_carryBlockLikeEnderman"});
         addAbility(EntityType.SHULKER, new String[]{"dragonsbuildtools_teleportLikeShulker", "dragonsbuildtools_shootShulkerBullets"});
+        addAbility(EntityType.SKELETON, new String[]{"dragonsbuildtools_burnInSunlight","dragonsbuildtools_shootArrowsLikeSkeleton"});
+        addAbility(EntityType.SPIDER, new String[]{"dragonsbuildtools_climbWallsLikeSpider"});
         // Extend for more entities as you see fit!
     }
     private static void addAbility(EntityType<?> type, String[] abilities) {
@@ -128,6 +147,8 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putBoolean("dragonsbuildtools_freezeWhenLookedAt", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_carryBlockLikeEnderman", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_shootShulkerBullets", false);
+        mob.getPersistentData().putBoolean("dragonsbuildtools_shootArrowsLikeSkeleton", false);
+        mob.getPersistentData().putBoolean("dragonsbuildtools_climbWallsLikeSpider", false);
 
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
@@ -157,6 +178,8 @@ public class RandomMobInheritEvents {
         System.out.println(" Freeze When Looked At: " + mob.getPersistentData().getBoolean("dragonsbuildtools_freezeWhenLookedAt"));
         System.out.println(" Carry Block Like Enderman: " + mob.getPersistentData().getBoolean("dragonsbuildtools_carryBlockLikeEnderman"));
         System.out.println(" Shoot Shulker Bullets: " + mob.getPersistentData().getBoolean("dragonsbuildtools_shootShulkerBullets"));
+        System.out.println(" Shoot Arrows Like Skeleton: " + mob.getPersistentData().getBoolean("dragonsbuildtools_shootArrowsLikeSkeleton"));
+        System.out.println(" Climb Walls Like Spider: " + mob.getPersistentData().getBoolean("dragonsbuildtools_climbWallsLikeSpider"));
     }
 
     private static void wipeGoals(Mob mob) throws Exception {

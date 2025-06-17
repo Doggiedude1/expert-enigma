@@ -108,6 +108,20 @@ public abstract class MobBehaviorMixin {
                 System.out.println("🧱 " + mob.getName().getString() + " picked up: " + randomBlock);
             }
         }
+
+        if (canClimbWalls(mob)) {
+            if (mob.horizontalCollision) {
+                mob.setDeltaMovement(mob.getDeltaMovement().x, 0.2, mob.getDeltaMovement().z);
+            }
+        }
+    }
+
+    @Inject(method = "doHurtTarget", at = @At("HEAD"))
+    private void dragonsbuildtools$applyHungerEffect(net.minecraft.world.entity.Entity target, CallbackInfoReturnable<Boolean> cir) {
+        Mob mob = (Mob)(Object)this;
+        if (shouldInflictHunger(mob) && target instanceof LivingEntity living) {
+            living.addEffect(new MobEffectInstance(MobEffects.HUNGER, 200));
+        }
     }
 
     @Inject(method = "doHurtTarget", at = @At("HEAD"))
@@ -183,6 +197,14 @@ public abstract class MobBehaviorMixin {
     }
     private boolean shootShulkerBullets(Mob mob){
         return mob.getPersistentData().getBoolean("dragonsbuildtools_shootShulkerBullets");
+    }
+
+    private boolean canShootArrows(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_shootArrowsLikeSkeleton");
+    }
+
+    private boolean canClimbWalls(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_climbWallsLikeSpider");
     }
 
 }
