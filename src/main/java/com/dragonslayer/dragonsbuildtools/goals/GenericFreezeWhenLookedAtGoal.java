@@ -32,12 +32,16 @@ public class GenericFreezeWhenLookedAtGoal extends Goal {
     @Override
     public void start() {
         mob.getNavigation().stop();
+        if (observedPlayer != null) {
+            mob.setTarget(observedPlayer);
+        }
     }
 
     @Override
     public void tick() {
         if (observedPlayer != null) {
             mob.getLookControl().setLookAt(observedPlayer, 10.0F, mob.getMaxHeadXRot());
+            mob.setTarget(observedPlayer);
         }
     }
 
