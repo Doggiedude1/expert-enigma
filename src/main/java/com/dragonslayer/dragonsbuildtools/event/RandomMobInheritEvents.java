@@ -17,6 +17,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import sun.misc.Unsafe;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +27,23 @@ import java.util.List;
  * Assigns a random mob's AI to every new mob that spawns.
  * A temporary donor mob supplies its goals and attributes to every spawned mob.
  * The donor is discarded immediately after copying data.
-=======
  */
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
     private static final String SKIP_TAG = "dragonsbuildtools_skip_inherit";
     private static List<EntityType<? extends Mob>> MOB_TYPES;
+    private static final Unsafe UNSAFE;
+
+    static {
+        Unsafe u = null;
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            u = (Unsafe) f.get(null);
+        } catch (Exception ignored) {
+        }
+        UNSAFE = u;
+    }
     // No persistent controller map is needed now that the donor is discarded
     // immediately after copying its AI data.
 
@@ -49,43 +63,7 @@ public class RandomMobInheritEvents {
     }
 
 
-    @SubscribeEvent
-    public static void onEntityTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
-        Mob controller = CONTROLLERS.get(entity);
-        if (controller == null) return;
 
-        if (controller.isRemoved() || controller.level() != entity.level()) {
-            CONTROLLERS.remove(entity);
-            return;
-        }
-
-        entity.absMoveTo(controller.getX(), controller.getY(), controller.getZ(), controller.getYRot(), controller.getXRot());
-        entity.setDeltaMovement(controller.getDeltaMovement());
-        entity.setRemainingFireTicks(controller.getRemainingFireTicks());
-    }
-
-    @SubscribeEvent
-    public static void onEntityLeave(EntityLeaveLevelEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
-        Mob controller = CONTROLLERS.remove(entity);
-        if (controller != null) controller.discard();
-    }
-
-    @SubscribeEvent
-    public static void onEntityDeath(LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
-        Mob controller = CONTROLLERS.remove(entity);
-        if (controller != null) controller.discard();
-    }
-
-    public static LivingEntity getController(LivingEntity host) {
-        return CONTROLLERS.get(host);
-    }
-
-    public static boolean hasController(LivingEntity host) {
-        return CONTROLLERS.containsKey(host);
-    }
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof Mob mob)) return;
@@ -109,6 +87,7 @@ public class RandomMobInheritEvents {
 
         copyAttributes(mob, donor);
         copyGoals(mob, donor);
+        donor.kill();
         donor.discard();
     }
 
@@ -148,14 +127,22 @@ public class RandomMobInheritEvents {
         @SuppressWarnings("unchecked")
         var srcSet = (Iterable<Object>) goalsField.get(src);
         @SuppressWarnings("unchecked")
-        var dstSet = (Iterable<Object>) goalsField.get(dst);
-        ((java.util.Collection<?>) dstSet).clear();
+        var dstSet = (java.util.Collection<?>) goalsField.get(dst);
+        dstSet.clear();
+
+        Method addGoal = GoalSelector.class.getDeclaredMethod("addGoal", int.class, Goal.class);
+        addGoal.setAccessible(true);
+
         for (Object wrapped : srcSet) {
-            Goal goal = (Goal) GoalSelector.class.getDeclaredField("goal").get(wrapped);
+            Class<?> wrapCls = wrapped.getClass();
+            Field goalField = wrapCls.getDeclaredField("goal");
+            Field prioField = wrapCls.getDeclaredField("priority");
+            goalField.setAccessible(true);
+            prioField.setAccessible(true);
+            Goal goal = (Goal) goalField.get(wrapped);
             retargetGoal(goal, newOwner, oldOwner);
-            int priority = GoalSelector.class.getDeclaredField("priority").getInt(wrapped);
-            Object newWrap = GoalSelector.class.getConstructor(int.class, Goal.class).newInstance(priority, goal);
-            ((java.util.Collection<Object>) dstSet).add(newWrap);
+            int priority = prioField.getInt(wrapped);
+            addGoal.invoke(dst, priority, goal);
         }
     }
 
@@ -167,10 +154,19 @@ public class RandomMobInheritEvents {
                 f.setAccessible(true);
                 Object value = f.get(goal);
                 if (value == oldOwner) {
-                    f.set(goal, newOwner);
+                    setFieldValue(f, goal, newOwner);
                 }
             }
             cls = cls.getSuperclass();
+        }
+    }
+
+    private static void setFieldValue(Field field, Object obj, Object value) throws IllegalAccessException {
+        if (Modifier.isFinal(field.getModifiers()) && UNSAFE != null) {
+            long offset = UNSAFE.objectFieldOffset(field);
+            UNSAFE.putObject(obj, offset, value);
+        } else {
+            field.set(obj, value);
         }
     }
 }
