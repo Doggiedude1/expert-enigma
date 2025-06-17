@@ -24,6 +24,7 @@ import java.util.List;
  * Assigns a random mob's AI to every new mob that spawns.
  * A temporary donor mob supplies its goals and attributes to every spawned mob.
  * The donor is discarded immediately after copying data.
+=======
  */
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
@@ -48,7 +49,43 @@ public class RandomMobInheritEvents {
     }
 
 
+    @SubscribeEvent
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        Mob controller = CONTROLLERS.get(entity);
+        if (controller == null) return;
 
+        if (controller.isRemoved() || controller.level() != entity.level()) {
+            CONTROLLERS.remove(entity);
+            return;
+        }
+
+        entity.absMoveTo(controller.getX(), controller.getY(), controller.getZ(), controller.getYRot(), controller.getXRot());
+        entity.setDeltaMovement(controller.getDeltaMovement());
+        entity.setRemainingFireTicks(controller.getRemainingFireTicks());
+    }
+
+    @SubscribeEvent
+    public static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        Mob controller = CONTROLLERS.remove(entity);
+        if (controller != null) controller.discard();
+    }
+
+    @SubscribeEvent
+    public static void onEntityDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        Mob controller = CONTROLLERS.remove(entity);
+        if (controller != null) controller.discard();
+    }
+
+    public static LivingEntity getController(LivingEntity host) {
+        return CONTROLLERS.get(host);
+    }
+
+    public static boolean hasController(LivingEntity host) {
+        return CONTROLLERS.containsKey(host);
+    }
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof Mob mob)) return;
