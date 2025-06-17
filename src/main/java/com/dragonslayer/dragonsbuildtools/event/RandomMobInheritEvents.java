@@ -122,6 +122,7 @@ public class RandomMobInheritEvents {
                 dst.setBaseValue(src.getBaseValue());
             }
         }
+
     }
 
     private static void wipeGoals(Mob mob) throws Exception {
