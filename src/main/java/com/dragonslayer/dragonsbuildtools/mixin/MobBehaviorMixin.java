@@ -124,6 +124,14 @@ public abstract class MobBehaviorMixin {
         }
     }
 
+    @Inject(method = "doHurtTarget", at = @At("HEAD"))
+    private void dragonsbuildtools$applyHungerEffect(net.minecraft.world.entity.Entity target, CallbackInfoReturnable<Boolean> cir) {
+        Mob mob = (Mob)(Object)this;
+        if (shouldInflictHunger(mob) && target instanceof LivingEntity living) {
+            living.addEffect(new MobEffectInstance(MobEffects.HUNGER, 200));
+        }
+    }
+
     private boolean teleport(LivingEntity mob, double x, double y, double z) {
         BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(x, y, z);
 
