@@ -15,34 +15,23 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Assigns a random mob's AI to every new mob that spawns.
- * The donor mob remains invisible and controls the host without riding it,
- * emulating passenger control without an actual passenger.
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Assigns a random mob's AI and attributes to every new mob that spawns.
- * A temporary donor mob is spawned only to copy its data, then immediately discarded.
+ * A temporary donor mob supplies its goals and attributes to every spawned mob.
+ * The donor is discarded immediately after copying data.
+=======
  */
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
     private static final String SKIP_TAG = "dragonsbuildtools_skip_inherit";
     private static List<EntityType<? extends Mob>> MOB_TYPES;
-    private static final Map<LivingEntity, Mob> CONTROLLERS = new HashMap<>();
+    // No persistent controller map is needed now that the donor is discarded
+    // immediately after copying its AI data.
 
     private static void initMobTypes(Level level) {
         if (MOB_TYPES != null && !MOB_TYPES.isEmpty()) return;
@@ -58,6 +47,7 @@ public class RandomMobInheritEvents {
         }
         MOB_TYPES = list;
     }
+
 
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
@@ -96,7 +86,6 @@ public class RandomMobInheritEvents {
     public static boolean hasController(LivingEntity host) {
         return CONTROLLERS.containsKey(host);
     }
-
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof Mob mob)) return;
@@ -113,13 +102,14 @@ public class RandomMobInheritEvents {
         if (donor == null) return;
 
         donor.getPersistentData().putBoolean(SKIP_TAG, true);
+        // Spawned solely for data transfer; it never enters the world
         donor.setInvisible(true);
         donor.setInvulnerable(true);
         donor.absMoveTo(mob.getX(), mob.getY(), mob.getZ(), mob.getYRot(), mob.getXRot());
-        event.getLevel().addFreshEntity(donor);
 
         copyAttributes(mob, donor);
-        CONTROLLERS.put(mob, donor);
+        copyGoals(mob, donor);
+        donor.discard();
     }
 
     private static void copyAttributes(Mob target, Mob source) {
