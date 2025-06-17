@@ -12,6 +12,8 @@ import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -91,12 +93,28 @@ public abstract class MobBehaviorMixin {
         }
 
         if (canTeleportLikeEnderman(mob)) {
+            if (mob.isInWaterRainOrBubble()) {
+                mob.hurt(mob.damageSources().drown(), 1.0F);
+                double dx = mob.getX() + (mob.getRandom().nextDouble() - 0.5) * 16.0;
+                double dy = mob.getY() + mob.getRandom().nextInt(16) - 8;
+                double dz = mob.getZ() + (mob.getRandom().nextDouble() - 0.5) * 16.0;
+                teleport(mob, dx, dy, dz);
+            }
+
             // Enderman-style teleport: teleport when hurt (simplified)
             if (mob.hurtTime > 0 && mob.hurtTime < 5 && mob.level().random.nextInt(4) == 0) {
-                double dx = mob.getX() + (mob.level().random.nextDouble() - (double)0.5F) * (double)64.0F;
+                double dx = mob.getX() + (mob.level().random.nextDouble() - (double)0.5F) * 64.0F;
                 double dy = mob.getY() + (mob.level().random.nextInt(64) - 32);
-                double dz = mob.getZ() + (mob.level().random.nextDouble() - (double)0.5F) * (double)64.0F;
-                teleport(mob, dx,dy,dz);
+                double dz = mob.getZ() + (mob.level().random.nextDouble() - (double)0.5F) * 64.0F;
+                teleport(mob, dx, dy, dz);
+            }
+
+            if (mob.getTarget() != null && mob.level().random.nextInt(40) == 0) {
+                LivingEntity target = mob.getTarget();
+                double dx = target.getX() + (mob.getRandom().nextDouble() - 0.5) * 8.0;
+                double dy = target.getY();
+                double dz = target.getZ() + (mob.getRandom().nextDouble() - 0.5) * 8.0;
+                teleport(mob, dx, dy, dz);
             }
         }
         if (mob.getPersistentData().getBoolean("dragonsbuildtools_carryBlockLikeEnderman")) {
@@ -114,6 +132,9 @@ public abstract class MobBehaviorMixin {
                 mob.setDeltaMovement(mob.getDeltaMovement().x, 0.2, mob.getDeltaMovement().z);
             }
         }
+        if (canClimbWalls(mob) && level.isDay() && mob.getTarget() instanceof Player) {
+            mob.setTarget(null);
+        }
     }
 
     @Inject(method = "doHurtTarget", at = @At("HEAD"))
@@ -121,6 +142,19 @@ public abstract class MobBehaviorMixin {
         Mob mob = (Mob)(Object)this;
         if (shouldInflictHunger(mob) && target instanceof LivingEntity living) {
             living.addEffect(new MobEffectInstance(MobEffects.HUNGER, 200));
+        }
+    }
+
+    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+    private void dragonsbuildtools$projectileTeleport(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        Mob mob = (Mob)(Object)this;
+        if (canTeleportLikeEnderman(mob) && source.is(DamageTypeTags.IS_PROJECTILE)) {
+            double dx = mob.getX() + (mob.getRandom().nextDouble() - 0.5) * 16.0;
+            double dy = mob.getY() + mob.getRandom().nextInt(16) - 8;
+            double dz = mob.getZ() + (mob.getRandom().nextDouble() - 0.5) * 16.0;
+            if (teleport(mob, dx, dy, dz)) {
+                cir.setReturnValue(false);
+            }
         }
     }
 

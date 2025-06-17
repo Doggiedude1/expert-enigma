@@ -103,7 +103,14 @@ public class RandomMobInheritEvents {
             mob.goalSelector.addGoal(2, new MeleeAttackGoal((PathfinderMob) mob, 1.0, false));
             mob.goalSelector.addGoal(3, new RandomStrollGoal((PathfinderMob) mob, 1.0));
             mob.targetSelector.addGoal(1, new HurtByTargetGoal((PathfinderMob) mob));
-            mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, Player.class, true));
+            mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(
+                    mob,
+                    Player.class,
+                    10,
+                    true,
+                    false,
+                    living -> !mob.level().isDay()
+            ));
         });
 
         // Add other entity types...
