@@ -15,59 +15,20 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Assigns a random mob's AI to every new mob that spawns.
- * The donor mob remains invisible and controls the host without riding it,
- * emulating passenger control without an actual passenger.
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Assigns a random mob's AI and attributes to every new mob that spawns.
- * A temporary donor mob is spawned only to copy its data, then immediately discarded.
- */
-@EventBusSubscriber(modid = BuildTools.MOD_ID)
-public class RandomMobInheritEvents {
-    private static final String SKIP_TAG = "dragonsbuildtools_skip_inherit";
-    private static List<EntityType<? extends Mob>> MOB_TYPES;
-    private static final Map<LivingEntity, Mob> CONTROLLERS = new HashMap<>();
-
-    private static void initMobTypes(Level level) {
-        if (MOB_TYPES != null && !MOB_TYPES.isEmpty()) return;
-        List<EntityType<? extends Mob>> list = new ArrayList<>();
-        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
-            if (type == EntityType.PLAYER) continue;
-            var entity = type.create(level);
-            if (entity instanceof Mob) {
-                @SuppressWarnings("unchecked")
-                EntityType<? extends Mob> mobType = (EntityType<? extends Mob>) type;
-                list.add(mobType);
-            }
-        }
-        MOB_TYPES = list;
-    }
-
-    @SubscribeEvent
-    public static void onEntityTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
-        Mob controller = CONTROLLERS.get(entity);
-        if (controller == null) return;
-
-        if (controller.isRemoved() || controller.level() != entity.level()) {
-            CONTROLLERS.remove(entity);
-            return;
+ * A temporary donor mob supplies its goals and attributes to every spawned mob.
+ * The donor is discarded immediately after copying data.
+    // No persistent controller map is needed now that the donor is discarded
+    // immediately after copying its AI data.
+        // Spawned solely for data transfer; it never enters the world
+        copyGoals(mob, donor);
+        donor.discard();
         }
 
         entity.absMoveTo(controller.getX(), controller.getY(), controller.getZ(), controller.getYRot(), controller.getXRot());
