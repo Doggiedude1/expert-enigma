@@ -14,12 +14,14 @@ public abstract class MobRendererScaleMixin<T extends LivingEntity> {
 
     @Inject(method = "render", at = @At("HEAD"))
     private void dragonsbuildtools$applyRenderScale(T entity, float entityYaw, float partialTicks, PoseStack poseStack, net.minecraft.client.renderer.MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
-        float scale = entity.getPersistentData().getFloat("dragonsbuildtools_scale");
-        if (scale != 0.0F) {
-            System.out.println("🎨 Rendering " + entity.getName().getString() + " with scale: " + scale);
-            poseStack.scale(scale, scale, scale);
-        } else {
-            System.out.println("🎨 Rendering " + entity.getName().getString() + " with default scale: 1.0");
+
+        if (entity instanceof ScaleAccessor scaleAccessor) {
+            float scale = scaleAccessor.dragonsbuildtools$getScale();
+            float finalScale = (scale != 0.0F) ? scale : 1.0F;
+            poseStack.scale(finalScale, finalScale, finalScale);
         }
+
+
+
     }
 }

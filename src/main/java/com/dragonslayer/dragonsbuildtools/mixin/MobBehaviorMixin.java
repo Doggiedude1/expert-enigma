@@ -245,5 +245,9 @@ public abstract class MobBehaviorMixin {
         return mob.getPersistentData().getFloat("dragonsbuildtools_scale");
     }
 
+    private boolean updateValues(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_update_scale");
+    }
+
 
 }

@@ -1,51 +1,34 @@
 package com.dragonslayer.dragonsbuildtools.event;
 
 import com.dragonslayer.dragonsbuildtools.BuildTools;
-import com.dragonslayer.dragonsbuildtools.accessor.ScaleAccessor;
+import com.dragonslayer.dragonsbuildtools.api.event.MobSplitAbilityEvent;
 import com.dragonslayer.dragonsbuildtools.goals.GenericFreezeWhenLookedAtGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericLeaveBlockGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericShulkerBulletGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericTakeBlockGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericBowAttackGoal;
 import com.dragonslayer.dragonsbuildtools.network.NetworkHandler;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Endermite;
-import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
@@ -140,51 +123,15 @@ public class RandomMobInheritEvents {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
         if (!(event.getEntity() instanceof Mob realMob)) return;
-        if(mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split") && !realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
-            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
-            if (mob instanceof ScaleAccessor) {
-                System.out.println("✅ mob is ScaleAccessor");
-                ((ScaleAccessor) mob).dragonsbuildtools$setScale(scale);
-            } else {
-                System.out.println("❌ mob is NOT ScaleAccessor");
-            }
-            if (!event.getLevel().isClientSide()) {
-                NetworkHandler.sendScaleUpdate(mob, scale);
-            }
+        if(realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_split") && !realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
             return;
         }
         if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
-            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
-            if (mob instanceof ScaleAccessor) {
-                System.out.println("✅ mob is ScaleAccessor");
-                ((ScaleAccessor) mob).dragonsbuildtools$setScale(scale);
-            } else {
-                System.out.println("❌ mob is NOT ScaleAccessor");
-            }
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
-            if (!event.getLevel().isClientSide()) {
-                NetworkHandler.sendScaleUpdate(mob, scale);
-            }
             return;
         }
         if (event.getLevel().isClientSide()) return;
-        if(mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split") && !realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
-            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
-            ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
-            realMob.refreshDimensions();
-            NetworkHandler.sendScaleUpdate(realMob, scale);
-            return;
-        }
-        if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
-            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
-            ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
-            realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
-            realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
-            realMob.refreshDimensions();
-            NetworkHandler.sendScaleUpdate(realMob, scale);
-            return;
-        }
         try {
             wipeGoals(mob);
         } catch (Exception e) {
@@ -268,18 +215,39 @@ public class RandomMobInheritEvents {
             child.moveTo(mob.getX(), mob.getY(), mob.getZ(), mob.getYRot(), mob.getXRot());
             child.getPersistentData().putBoolean("dragonsbuildtools_slime_split", true);
             child.getPersistentData().putFloat("dragonsbuildtools_scale", scale / 2f);
+            child.getPersistentData().putBoolean("dragonsbuildtools_update_scale", true);
             if(child.getPersistentData().getFloat("dragonsbuildtools_scale") <= 0.25f) child.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", true);
-            if (mob instanceof ScaleAccessor) {
-                System.out.println("✅ mob is ScaleAccessor");
-                ((ScaleAccessor) child).dragonsbuildtools$setScale(child.getPersistentData().getFloat("dragonsbuildtools_scale"));
-            } else {
-                System.out.println("❌ mob is NOT ScaleAccessor");
-            }
-            NetworkHandler.sendScaleUpdate(child, child.getPersistentData().getFloat("dragonsbuildtools_scale"));
-            child.refreshDimensions();
             level.addFreshEntity(child);
+            NeoForge.EVENT_BUS.post(new MobSplitAbilityEvent(child));
         }
 
+    }
+    /*@SubscribeEvent
+    public static void OnEntityTick(net.neoforged.neoforge.event.tick.EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof Mob entity)) return;
+        if (entity.level().isClientSide()) return;  // ✅ only run on server
+
+        if (entity.getPersistentData().getBoolean("dragonsbuildtools_update_scale")) {
+            entity.getPersistentData().putBoolean("dragonsbuildtools_update_scale", false);
+
+            float scale = entity.getPersistentData().getFloat("dragonsbuildtools_scale");
+            NetworkHandler.sendScaleUpdate(entity, scale);
+            entity.refreshDimensions();
+
+            System.out.println("✅ Sent scale update for entity ID " + entity.getId() + ": " + scale);
+        }
+    }*/
+    @SubscribeEvent
+    public static void OnEntityConstructing(MobSplitAbilityEvent event){
+        if (!(event.getChild() instanceof Mob entity)) return;
+        if (entity.level().isClientSide()) return;  // ✅ only run on server
+
+
+        float scale = entity.getPersistentData().getFloat("dragonsbuildtools_scale");
+        NetworkHandler.sendScaleUpdate(entity, scale);
+        entity.refreshDimensions();
+
+        System.out.println("✅ Sent scale update for entity ID " + entity.getId() + ": " + scale);
     }
 
 }

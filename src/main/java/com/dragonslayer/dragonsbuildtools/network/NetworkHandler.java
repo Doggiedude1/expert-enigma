@@ -1,6 +1,7 @@
 package com.dragonslayer.dragonsbuildtools.network;
 
 import com.dragonslayer.dragonsbuildtools.BuildTools;
+import com.dragonslayer.dragonsbuildtools.accessor.ScaleAccessor;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -22,7 +23,9 @@ public class NetworkHandler {
         context.enqueueWork(() -> {
             Entity entity = context.player().level().getEntity(payload.entityId());
             if (entity != null) {
-                entity.getPersistentData().putFloat("dragonsbuildtools_scale", payload.scale());
+                ((ScaleAccessor) entity).dragonsbuildtools$setScale(payload.scale());
+
+                entity.refreshDimensions();
             }
         });
     }
