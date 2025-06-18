@@ -138,12 +138,44 @@ public class RandomMobInheritEvents {
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
-        if (event.getLevel().isClientSide()) return;
-        if (mob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
-            mob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
+        if (!(event.getEntity() instanceof Mob realMob)) return;
+        if(mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split") && !realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
+            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
+            if (mob instanceof ScaleAccessor) {
+                System.out.println("✅ mob is ScaleAccessor");
+                ((ScaleAccessor) mob).dragonsbuildtools$setScale(scale);
+            } else {
+                System.out.println("❌ mob is NOT ScaleAccessor");
+            }
             return;
         }
-
+        if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
+            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
+            if (mob instanceof ScaleAccessor) {
+                System.out.println("✅ mob is ScaleAccessor");
+                ((ScaleAccessor) mob).dragonsbuildtools$setScale(scale);
+            } else {
+                System.out.println("❌ mob is NOT ScaleAccessor");
+            }
+            realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
+            realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
+            return;
+        }
+        if (event.getLevel().isClientSide()) return;
+        if(mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split") && !realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
+            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
+            ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
+            realMob.refreshDimensions();
+            return;
+        }
+        if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
+            float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
+            ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
+            realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
+            realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
+            realMob.refreshDimensions();
+            return;
+        }
         try {
             wipeGoals(mob);
         } catch (Exception e) {
@@ -163,8 +195,8 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putBoolean("dragonsbuildtools_shootArrowsLikeSkeleton", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_climbWallsLikeSpider", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
-        mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1.0F);
-
+        mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1f);
+        mob.refreshDimensions();
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
         EntityType<?> sourceType = sourceTypes[mob.getRandom().nextInt(sourceTypes.length)];
@@ -185,19 +217,6 @@ public class RandomMobInheritEvents {
                 mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1.0F);
             }
         }
-
-        // Show final abilities
-        System.out.println("After applying abilities: ");
-        System.out.println(" burnInSunlight: " + mob.getPersistentData().getBoolean("dragonsbuildtools_burnInSunlight"));
-        System.out.println(" needsWaterToBreathe: " + mob.getPersistentData().getBoolean("dragonsbuildtools_needsWaterToBreathe"));
-        System.out.println(" inflictsHunger: " + mob.getPersistentData().getBoolean("dragonsbuildtools_inflictsHunger"));
-        System.out.println(" Teleport Like Enderman: " + mob.getPersistentData().getBoolean("dragonsbuildtools_teleportLikeEnderman"));
-        System.out.println(" Teleport Like Shulker: " + mob.getPersistentData().getBoolean("dragonsbuildtools_teleportLikeShulker"));
-        System.out.println(" Freeze When Looked At: " + mob.getPersistentData().getBoolean("dragonsbuildtools_freezeWhenLookedAt"));
-        System.out.println(" Carry Block Like Enderman: " + mob.getPersistentData().getBoolean("dragonsbuildtools_carryBlockLikeEnderman"));
-        System.out.println(" Shoot Shulker Bullets: " + mob.getPersistentData().getBoolean("dragonsbuildtools_shootShulkerBullets"));
-        System.out.println(" Shoot Arrows Like Skeleton: " + mob.getPersistentData().getBoolean("dragonsbuildtools_shootArrowsLikeSkeleton"));
-        System.out.println(" Climb Walls Like Spider: " + mob.getPersistentData().getBoolean("dragonsbuildtools_climbWallsLikeSpider"));
     }
 
     private static void wipeGoals(Mob mob) throws Exception {
@@ -239,11 +258,16 @@ public class RandomMobInheritEvents {
             child.getPersistentData().putBoolean("dragonsbuildtools_slime_split", true);
             child.getPersistentData().putFloat("dragonsbuildtools_scale", scale / 2f);
             if(child.getPersistentData().getFloat("dragonsbuildtools_scale") <= 0.25f) child.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", true);
+            if (mob instanceof ScaleAccessor) {
+                System.out.println("✅ mob is ScaleAccessor");
+                ((ScaleAccessor) child).dragonsbuildtools$setScale(child.getPersistentData().getFloat("dragonsbuildtools_scale"));
+            } else {
+                System.out.println("❌ mob is NOT ScaleAccessor");
+            }
+            child.refreshDimensions();
             level.addFreshEntity(child);
-            ((ScaleAccessor) child).dragonsbuildtools$setScale(scale / 2f);
         }
 
     }
-
 
 }
