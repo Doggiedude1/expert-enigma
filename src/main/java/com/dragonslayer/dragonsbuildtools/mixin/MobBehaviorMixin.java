@@ -233,5 +233,17 @@ public abstract class MobBehaviorMixin {
         return mob.getPersistentData().getBoolean("dragonsbuildtools_climbWallsLikeSpider");
     }
 
+    private boolean canSplit(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split");
+    }
+
+    private boolean shouldSkipSpit(Mob mob){
+        return mob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split");
+    }
+
+    private float mobScale(Mob mob){
+        return mob.getPersistentData().getFloat("dragonsbuildtools_scale");
+    }
+
 
 }

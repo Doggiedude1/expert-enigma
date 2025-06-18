@@ -48,9 +48,6 @@ import java.util.Set;
 
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
-    private static final String SKIP_TAG = "dragonsbuildtools_skip_inherit";
-    private static final String SPLIT_TAG = "dragonsbuildtools_slime_split";
-    private static final String SCALE_TAG = "dragonsbuildtools_scale";
     private static final Map<EntityType<?>, Set<String>> ABILITY_MAP = new HashMap<>();
     private static final Map<EntityType<?>, GoalBuilder> GOAL_MAP = new HashMap<>();
     static {
@@ -127,7 +124,7 @@ public class RandomMobInheritEvents {
         addAbility(EntityType.SHULKER, new String[]{"dragonsbuildtools_teleportLikeShulker", "dragonsbuildtools_shootShulkerBullets"});
         addAbility(EntityType.SKELETON, new String[]{"dragonsbuildtools_burnInSunlight","dragonsbuildtools_shootArrowsLikeSkeleton"});
         addAbility(EntityType.SPIDER, new String[]{"dragonsbuildtools_climbWallsLikeSpider"});
-        addAbility(EntityType.SLIME, new String[]{SPLIT_TAG});
+        addAbility(EntityType.SLIME, new String[]{"dragonsbuildtools_slime_split"});
         // Extend for more entities as you see fit!
     }
     private static void addAbility(EntityType<?> type, String[] abilities) {
@@ -142,8 +139,8 @@ public class RandomMobInheritEvents {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
         if (event.getLevel().isClientSide()) return;
-        if (mob.getPersistentData().getBoolean(SKIP_TAG)) {
-            mob.getPersistentData().putBoolean(SKIP_TAG, false);
+        if (mob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
+            mob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
             return;
         }
 
@@ -165,8 +162,8 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putBoolean("dragonsbuildtools_shootShulkerBullets", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_shootArrowsLikeSkeleton", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_climbWallsLikeSpider", false);
-        mob.getPersistentData().putBoolean(SPLIT_TAG, false);
-        mob.getPersistentData().putFloat(SCALE_TAG, 1.0F);
+        mob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
+        mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1.0F);
 
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
@@ -184,8 +181,8 @@ public class RandomMobInheritEvents {
                 mob.getPersistentData().putBoolean(ability, true);
                 System.out.println("✅ Applied ability: " + ability);
             }
-            if (abilities.contains(SPLIT_TAG)) {
-                mob.getPersistentData().putFloat(SCALE_TAG, 1.0F);
+            if (abilities.contains("dragonsbuildtools_slime_split")) {
+                mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1.0F);
             }
         }
 
@@ -229,9 +226,9 @@ public class RandomMobInheritEvents {
         }
 
         if (!(entity instanceof Mob mob)) return;
-        if (!mob.getPersistentData().getBoolean(SPLIT_TAG)) return;
+        if (!mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split")) return;
 
-        float scale = mob.getPersistentData().getFloat(SCALE_TAG);
+        float scale = mob.getPersistentData().getFloat("dragonsbuildtools_scale");
         if (scale <= 0.25F) return;
 
         Level level = mob.level();
@@ -239,9 +236,9 @@ public class RandomMobInheritEvents {
             Mob child = (Mob) mob.getType().create(level);
             if (child == null) continue;
             child.moveTo(mob.getX(), mob.getY(), mob.getZ(), mob.getYRot(), mob.getXRot());
-            child.getPersistentData().putBoolean(SPLIT_TAG, true);
-            child.getPersistentData().putFloat(SCALE_TAG, scale / 2f);
-            child.getPersistentData().putBoolean(SKIP_TAG, true);
+            child.getPersistentData().putBoolean("dragonsbuildtools_slime_split", true);
+            child.getPersistentData().putFloat("dragonsbuildtools_scale", scale / 2f);
+            if(child.getPersistentData().getFloat("dragonsbuildtools_scale") <= 0.25f) child.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", true);
             level.addFreshEntity(child);
             ((ScaleAccessor) child).dragonsbuildtools$setScale(scale / 2f);
         }
