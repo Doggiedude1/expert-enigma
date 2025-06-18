@@ -49,6 +49,7 @@ public class BuildTools
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
+        net.neoforged.neoforge.network.registration.NetworkRegistry.setup();
     }
 
     // Add the example block item to the building blocks tab
