@@ -39,7 +39,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import com.dragonslayer.dragonsbuildtools.network.BuildToolsNetwork;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 import java.lang.reflect.Field;
@@ -146,7 +145,6 @@ public class RandomMobInheritEvents {
             if (mob instanceof ScaleAccessor) {
                 System.out.println("✅ mob is ScaleAccessor");
                 ((ScaleAccessor) mob).dragonsbuildtools$setScale(scale);
-                BuildToolsNetwork.sendScaleSync(mob, scale);
             } else {
                 System.out.println("❌ mob is NOT ScaleAccessor");
             }
@@ -160,7 +158,6 @@ public class RandomMobInheritEvents {
             if (mob instanceof ScaleAccessor) {
                 System.out.println("✅ mob is ScaleAccessor");
                 ((ScaleAccessor) mob).dragonsbuildtools$setScale(scale);
-                BuildToolsNetwork.sendScaleSync(mob, scale);
             } else {
                 System.out.println("❌ mob is NOT ScaleAccessor");
             }
@@ -175,7 +172,6 @@ public class RandomMobInheritEvents {
         if(mob.getPersistentData().getBoolean("dragonsbuildtools_slime_split") && !realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
             float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
             ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
-            BuildToolsNetwork.sendScaleSync(realMob, scale);
             realMob.refreshDimensions();
             NetworkHandler.sendScaleUpdate(realMob, scale);
             return;
@@ -183,7 +179,6 @@ public class RandomMobInheritEvents {
         if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
             float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
             ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
-            BuildToolsNetwork.sendScaleSync(realMob, scale);
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
             realMob.refreshDimensions();
@@ -212,7 +207,6 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1f);
         NetworkHandler.sendScaleUpdate(mob, 1f);
         mob.refreshDimensions();
-        BuildToolsNetwork.sendScaleSync(mob, mob.getPersistentData().getFloat("dragonsbuildtools_scale"));
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
         EntityType<?> sourceType = sourceTypes[mob.getRandom().nextInt(sourceTypes.length)];
@@ -234,7 +228,6 @@ public class RandomMobInheritEvents {
                 NetworkHandler.sendScaleUpdate(mob, 1.0F);
             }
         }
-        BuildToolsNetwork.sendScaleSync(mob, mob.getPersistentData().getFloat("dragonsbuildtools_scale"));
     }
 
     private static void wipeGoals(Mob mob) throws Exception {
@@ -284,7 +277,6 @@ public class RandomMobInheritEvents {
             }
             NetworkHandler.sendScaleUpdate(child, child.getPersistentData().getFloat("dragonsbuildtools_scale"));
             child.refreshDimensions();
-            BuildToolsNetwork.sendScaleSync(child, child.getPersistentData().getFloat("dragonsbuildtools_scale"));
             level.addFreshEntity(child);
         }
 
