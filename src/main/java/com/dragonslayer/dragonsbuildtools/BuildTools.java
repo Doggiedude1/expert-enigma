@@ -49,7 +49,6 @@ public class BuildTools
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
-        // NetworkRegistry.setup is handled globally; calling it here caused a crash
     }
 
     // Add the example block item to the building blocks tab
