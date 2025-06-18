@@ -233,4 +233,5 @@ public abstract class MobBehaviorMixin {
         return mob.getPersistentData().getBoolean("dragonsbuildtools_climbWallsLikeSpider");
     }
 
+
 }

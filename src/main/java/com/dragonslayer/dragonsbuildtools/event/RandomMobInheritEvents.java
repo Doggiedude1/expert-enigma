@@ -1,6 +1,7 @@
 package com.dragonslayer.dragonsbuildtools.event;
 
 import com.dragonslayer.dragonsbuildtools.BuildTools;
+import com.dragonslayer.dragonsbuildtools.accessor.ScaleAccessor;
 import com.dragonslayer.dragonsbuildtools.goals.GenericFreezeWhenLookedAtGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericLeaveBlockGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericShulkerBulletGoal;
@@ -47,6 +48,9 @@ import java.util.Set;
 
 @EventBusSubscriber(modid = BuildTools.MOD_ID)
 public class RandomMobInheritEvents {
+    private static final String SKIP_TAG = "dragonsbuildtools_skip_inherit";
+    private static final String SPLIT_TAG = "dragonsbuildtools_slime_split";
+    private static final String SCALE_TAG = "dragonsbuildtools_scale";
     private static final Map<EntityType<?>, Set<String>> ABILITY_MAP = new HashMap<>();
     private static final Map<EntityType<?>, GoalBuilder> GOAL_MAP = new HashMap<>();
     static {
@@ -123,6 +127,7 @@ public class RandomMobInheritEvents {
         addAbility(EntityType.SHULKER, new String[]{"dragonsbuildtools_teleportLikeShulker", "dragonsbuildtools_shootShulkerBullets"});
         addAbility(EntityType.SKELETON, new String[]{"dragonsbuildtools_burnInSunlight","dragonsbuildtools_shootArrowsLikeSkeleton"});
         addAbility(EntityType.SPIDER, new String[]{"dragonsbuildtools_climbWallsLikeSpider"});
+        addAbility(EntityType.SLIME, new String[]{SPLIT_TAG});
         // Extend for more entities as you see fit!
     }
     private static void addAbility(EntityType<?> type, String[] abilities) {
@@ -137,6 +142,10 @@ public class RandomMobInheritEvents {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
         if (event.getLevel().isClientSide()) return;
+        if (mob.getPersistentData().getBoolean(SKIP_TAG)) {
+            mob.getPersistentData().putBoolean(SKIP_TAG, false);
+            return;
+        }
 
         try {
             wipeGoals(mob);
@@ -156,6 +165,8 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putBoolean("dragonsbuildtools_shootShulkerBullets", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_shootArrowsLikeSkeleton", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_climbWallsLikeSpider", false);
+        mob.getPersistentData().putBoolean(SPLIT_TAG, false);
+        mob.getPersistentData().putFloat(SCALE_TAG, 1.0F);
 
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
@@ -172,6 +183,9 @@ public class RandomMobInheritEvents {
             for (String ability : abilities) {
                 mob.getPersistentData().putBoolean(ability, true);
                 System.out.println("✅ Applied ability: " + ability);
+            }
+            if (abilities.contains(SPLIT_TAG)) {
+                mob.getPersistentData().putFloat(SCALE_TAG, 1.0F);
             }
         }
 
@@ -206,12 +220,30 @@ public class RandomMobInheritEvents {
     @SubscribeEvent
     public static void OnEntityDeath(LivingDeathEvent event){
         // Drop carried block
-        LivingEntity mob = event.getEntity();
-        String blockId = mob.getPersistentData().getString("dragonsbuildtools_carriedBlock");
+        LivingEntity entity = event.getEntity();
+        String blockId = entity.getPersistentData().getString("dragonsbuildtools_carriedBlock");
         if (!blockId.isEmpty()) {
             Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockId));
-            mob.level().addFreshEntity(new ItemEntity(mob.level(), mob.getX(), mob.getY(), mob.getZ(), new ItemStack(block)));
-            mob.getPersistentData().putString("dragonsbuildtools_carriedBlock", "");
+            entity.level().addFreshEntity(new ItemEntity(entity.level(), entity.getX(), entity.getY(), entity.getZ(), new ItemStack(block)));
+            entity.getPersistentData().putString("dragonsbuildtools_carriedBlock", "");
+        }
+
+        if (!(entity instanceof Mob mob)) return;
+        if (!mob.getPersistentData().getBoolean(SPLIT_TAG)) return;
+
+        float scale = mob.getPersistentData().getFloat(SCALE_TAG);
+        if (scale <= 0.25F) return;
+
+        Level level = mob.level();
+        for (int i = 0; i < 2; i++) {
+            Mob child = (Mob) mob.getType().create(level);
+            if (child == null) continue;
+            child.moveTo(mob.getX(), mob.getY(), mob.getZ(), mob.getYRot(), mob.getXRot());
+            child.getPersistentData().putBoolean(SPLIT_TAG, true);
+            child.getPersistentData().putFloat(SCALE_TAG, scale / 2f);
+            child.getPersistentData().putBoolean(SKIP_TAG, true);
+            level.addFreshEntity(child);
+            ((ScaleAccessor) child).dragonsbuildtools$setScale(scale / 2f);
         }
 
     }
