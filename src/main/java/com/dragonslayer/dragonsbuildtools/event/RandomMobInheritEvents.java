@@ -7,6 +7,7 @@ import com.dragonslayer.dragonsbuildtools.goals.GenericLeaveBlockGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericShulkerBulletGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericTakeBlockGoal;
 import com.dragonslayer.dragonsbuildtools.goals.GenericBowAttackGoal;
+import com.dragonslayer.dragonsbuildtools.network.NetworkHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -147,6 +148,9 @@ public class RandomMobInheritEvents {
             } else {
                 System.out.println("❌ mob is NOT ScaleAccessor");
             }
+            if (!event.getLevel().isClientSide()) {
+                NetworkHandler.sendScaleUpdate(mob, scale);
+            }
             return;
         }
         if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
@@ -159,6 +163,9 @@ public class RandomMobInheritEvents {
             }
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
+            if (!event.getLevel().isClientSide()) {
+                NetworkHandler.sendScaleUpdate(mob, scale);
+            }
             return;
         }
         if (event.getLevel().isClientSide()) return;
@@ -166,6 +173,7 @@ public class RandomMobInheritEvents {
             float scale = realMob.getPersistentData().getFloat("dragonsbuildtools_scale");
             ((ScaleAccessor) realMob).dragonsbuildtools$setScale(scale);
             realMob.refreshDimensions();
+            NetworkHandler.sendScaleUpdate(realMob, scale);
             return;
         }
         if (realMob.getPersistentData().getBoolean("dragonsbuildtools_slime_skip_split")) {
@@ -174,6 +182,7 @@ public class RandomMobInheritEvents {
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_skip_split", false);
             realMob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
             realMob.refreshDimensions();
+            NetworkHandler.sendScaleUpdate(realMob, scale);
             return;
         }
         try {
@@ -196,6 +205,7 @@ public class RandomMobInheritEvents {
         mob.getPersistentData().putBoolean("dragonsbuildtools_climbWallsLikeSpider", false);
         mob.getPersistentData().putBoolean("dragonsbuildtools_slime_split", false);
         mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1f);
+        NetworkHandler.sendScaleUpdate(mob, 1f);
         mob.refreshDimensions();
         // Randomly pick a source type from the ability map
         EntityType<?>[] sourceTypes = ABILITY_MAP.keySet().toArray(new EntityType[0]); //May have hostile abilites while a passive ai
@@ -215,6 +225,7 @@ public class RandomMobInheritEvents {
             }
             if (abilities.contains("dragonsbuildtools_slime_split")) {
                 mob.getPersistentData().putFloat("dragonsbuildtools_scale", 1.0F);
+                NetworkHandler.sendScaleUpdate(mob, 1.0F);
             }
         }
     }
@@ -264,6 +275,7 @@ public class RandomMobInheritEvents {
             } else {
                 System.out.println("❌ mob is NOT ScaleAccessor");
             }
+            NetworkHandler.sendScaleUpdate(child, child.getPersistentData().getFloat("dragonsbuildtools_scale"));
             child.refreshDimensions();
             level.addFreshEntity(child);
         }
